@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-labelledby="title">
+  <title id="title">National University QMO modern monogram</title>
+  <path d="M36 22h114l-28 136H8z" fill="#123a70"/>
+  <path d="M150 22h56l-28 136h-56z" fill="#d4aa4f"/>
+  <path d="M206 22h106l-28 136H178z" fill="#eaf2fb"/>
+  <text x="92" y="112" text-anchor="middle" font-family="Arial, sans-serif" font-size="64" font-weight="700" fill="#fff">NU</text>
+  <text x="245" y="91" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" font-weight="700" letter-spacing="3" fill="#123a70">QMO</text>
+  <text x="245" y="119" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="700" letter-spacing="4" fill="#b58424">MANILA</text>
+</svg>

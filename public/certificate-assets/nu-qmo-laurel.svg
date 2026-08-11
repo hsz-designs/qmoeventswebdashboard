@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 240" role="img" aria-labelledby="title">
+  <title id="title">National University QMO laurel mark</title>
+  <g fill="none" stroke="#c49330" stroke-width="6" stroke-linecap="round">
+    <path d="M77 205C31 165 25 99 58 46"/>
+    <path d="M203 205c46-40 52-106 19-159"/>
+  </g>
+  <g fill="#d4aa4f">
+    <ellipse cx="56" cy="177" rx="11" ry="23" transform="rotate(-42 56 177)"/>
+    <ellipse cx="40" cy="143" rx="10" ry="22" transform="rotate(-66 40 143)"/>
+    <ellipse cx="39" cy="106" rx="10" ry="21" transform="rotate(-86 39 106)"/>
+    <ellipse cx="54" cy="70" rx="10" ry="21" transform="rotate(-118 54 70)"/>
+    <ellipse cx="224" cy="177" rx="11" ry="23" transform="rotate(42 224 177)"/>
+    <ellipse cx="240" cy="143" rx="10" ry="22" transform="rotate(66 240 143)"/>
+    <ellipse cx="241" cy="106" rx="10" ry="21" transform="rotate(86 241 106)"/>
+    <ellipse cx="226" cy="70" rx="10" ry="21" transform="rotate(118 226 70)"/>
+  </g>
+  <circle cx="140" cy="115" r="72" fill="#fffdf8" stroke="#123a70" stroke-width="7"/>
+  <circle cx="140" cy="115" r="59" fill="none" stroke="#d4aa4f" stroke-width="3"/>
+  <text x="140" y="119" text-anchor="middle" font-family="Georgia, serif" font-size="55" font-weight="700" fill="#123a70">NU</text>
+  <text x="140" y="148" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" letter-spacing="4" fill="#b58424">QMO</text>
+</svg>

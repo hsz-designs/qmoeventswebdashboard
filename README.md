@@ -1,36 +1,28 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# QMO Web Dashboard
 
-## Getting Started
+A modern Next.js frontend and Python FastAPI backend architecture with Supabase-ready authentication and a polished dashboard experience.
 
-First, run the development server:
+## Frontend
+- Next.js 16 with TypeScript and Tailwind
+- Supabase auth integration points in the auth flow
+- Dashboard sections for Users, Events, and Calendar
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Backend
+- FastAPI service in backend/main.py
+- Typed CRUD endpoints for all 12 NU tables under `/api`
+- PostgreSQL/Supabase schema for the NU CSV exports in backend/schema.sql
+- Matching Pydantic CSV/API models in backend/schemas.py
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Run locally
+- Frontend: npm run dev
+- Backend: `./backend/run.sh`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The backend launcher finds `python3`, creates `.venv`, installs the pinned
+dependencies through the virtual environment, and starts FastAPI. It works from
+either the project root or the `backend` directory.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+If file watching is unavailable, start it with
+`QMO_BACKEND_RELOAD=0 ./backend/run.sh`.
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Copy `backend/.env.example` to `backend/.env` and add the Supabase URL and
+service-role key before using CRUD routes. See `backend/API.md` for all routes.

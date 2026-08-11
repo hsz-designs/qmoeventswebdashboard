@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-labelledby="title">
+  <title id="title">National University QMO seal</title>
+  <circle cx="120" cy="120" r="112" fill="#123a70"/>
+  <circle cx="120" cy="120" r="96" fill="none" stroke="#d4aa4f" stroke-width="5"/>
+  <circle cx="120" cy="120" r="76" fill="#fffdf8"/>
+  <path d="M54 83a78 78 0 0 1 132 0M54 157a78 78 0 0 0 132 0" fill="none" stroke="#d4aa4f" stroke-width="4" stroke-linecap="round"/>
+  <text x="120" y="129" text-anchor="middle" font-family="Arial, sans-serif" font-size="56" font-weight="700" fill="#123a70">NU</text>
+  <text x="120" y="158" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="4" fill="#b58424">QMO</text>
+  <circle cx="38" cy="120" r="4" fill="#d4aa4f"/>
+  <circle cx="202" cy="120" r="4" fill="#d4aa4f"/>
+</svg>
