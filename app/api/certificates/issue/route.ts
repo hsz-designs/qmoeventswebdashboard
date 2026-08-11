@@ -119,7 +119,7 @@ async function storageCertificateUrl(filePath: string | null) {
 
     const bucket = getSupabaseAdmin().storage.from(STORAGE_BUCKET);
     const publicUrlResult = await bucket.getPublicUrl(filePath);
-    if (publicUrlResult.error || !publicUrlResult.data?.publicUrl) {
+    if (!publicUrlResult.data?.publicUrl) {
         const signed = await bucket.createSignedUrl(filePath, ATTENDEE_CERTIFICATE_URL_TTL_SECONDS);
         return signed.error ? null : signed.data.signedUrl;
     }

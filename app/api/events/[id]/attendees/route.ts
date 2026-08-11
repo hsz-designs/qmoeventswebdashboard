@@ -3,7 +3,7 @@ import { EVENT_SELECT, parseEventRecord } from "@/app/api/events/event-api";
 import { SESSION_SELECT } from "@/app/api/events/[id]/sessions/session-api";
 import { parseUserRecord, USER_SELECT } from "@/app/api/users/user-api";
 import type { EventAttendeeDetail, EventAttendeesResponse } from "@/lib/event-attendees";
-import type { AttendanceRecord, AttendanceSession } from "@/lib/users";
+import { attendanceState, type AttendanceRecord, type AttendanceSession } from "@/lib/users";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -56,11 +56,7 @@ export async function GET(request: Request, context: EventAttendeesContext) {
         attendance: record,
         user: users.find((item) => item.auth_user_id === record.user_id) || null,
         session: sessions.find((session) => session.id === record.session_id) || null,
-        state: record.date_time_first_in && !record.date_time_last_out
-            ? "currently_attending"
-            : record.date_time_first_in
-                ? "attended"
-                : "registered",
+        state: attendanceState(record),
     }));
 
     const response: EventAttendeesResponse = {

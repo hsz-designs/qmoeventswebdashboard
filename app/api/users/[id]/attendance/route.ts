@@ -7,6 +7,7 @@ import type {
     UserAttendanceResponse,
     UserEventAttendance,
 } from "@/lib/users";
+import { attendanceState } from "@/lib/users";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { parseUserRecord, USER_SELECT } from "../../user-api";
 
@@ -76,15 +77,21 @@ export async function GET(request: Request, context: UserAttendanceContext) {
             .map((record) => record.date_time_last_out)
             .filter((value): value is string => Boolean(value))
             .sort();
-        const currentlyAttending = eventRecords.some(
-            (record) => record.date_time_first_in && !record.date_time_last_out,
-        );
-        const attended = eventRecords.some((record) => Boolean(record.date_time_first_in));
+        const recordStates = eventRecords.map(attendanceState);
+        const state = recordStates.includes("currently_attending")
+            ? "currently_attending"
+            : recordStates.includes("on_break")
+                ? "on_break"
+                : recordStates.includes("completed")
+                    ? "completed"
+                    : recordStates.includes("attended")
+                        ? "attended"
+                        : "registered";
 
         return {
             event: events.find((event) => event.id === eventId) || null,
             event_id: eventId,
-            state: currentlyAttending ? "currently_attending" : attended ? "attended" : "registered",
+            state,
             records: eventRecords,
             sessions: sessions.filter((session) =>
                 eventRecords.some((record) => record.session_id === session.id),

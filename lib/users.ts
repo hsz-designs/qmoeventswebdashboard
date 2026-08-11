@@ -52,7 +52,21 @@ export type AttendanceSession = {
     session_end_time: string;
 };
 
-export type AttendanceState = "currently_attending" | "attended" | "registered";
+export type AttendanceState =
+    | "currently_attending"
+    | "on_break"
+    | "completed"
+    | "attended"
+    | "registered";
+
+export function attendanceState(record: AttendanceRecord): AttendanceState {
+    if (record.status === 1) return "currently_attending";
+    if (record.status === 67) return "on_break";
+    if (record.status === 2) return "completed";
+    if (record.date_time_first_in && !record.date_time_last_out) return "currently_attending";
+    if (record.date_time_first_in) return "attended";
+    return "registered";
+}
 
 export type UserEventAttendance = {
     event: EventRecord | null;

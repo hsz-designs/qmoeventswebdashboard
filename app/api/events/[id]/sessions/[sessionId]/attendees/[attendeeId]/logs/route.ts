@@ -10,7 +10,7 @@ import type {
     AttendeeLogsResponse,
     EventAttendeeDetail,
 } from "@/lib/event-attendees";
-import type { AttendanceRecord } from "@/lib/users";
+import { attendanceState, type AttendanceRecord } from "@/lib/users";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -78,11 +78,7 @@ export async function GET(request: Request, context: AttendeeLogsContext) {
         attendance,
         user: userResult.data ? parseUserRecord(userResult.data) : null,
         session,
-        state: attendance.date_time_first_in && !attendance.date_time_last_out
-            ? "currently_attending"
-            : attendance.date_time_first_in
-                ? "attended"
-                : "registered",
+        state: attendanceState(attendance),
     };
     const response: AttendeeLogsResponse = {
         event: parseEventRecord(eventResult.data),

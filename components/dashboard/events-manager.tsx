@@ -12,6 +12,7 @@ import {
     Pencil,
     PlusCircle,
     QrCode,
+    ScanLine,
     Trash2,
     UsersRound,
     X,
@@ -588,6 +589,14 @@ export function EventsManager() {
                                     </td>
                                     <td className="px-5 py-4">
                                         <div className="flex justify-end gap-2">
+                                            <Link
+                                                href={`/dashboard/events/${event.id}/scan`}
+                                                aria-label={`Scan attendees for ${event.event_name}`}
+                                                title="Open attendee scanner"
+                                                className="rounded-xl border border-slate-200 p-2 text-slate-500 transition hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 dark:border-slate-700 dark:text-slate-400 dark:hover:border-violet-500 dark:hover:bg-violet-400/10 dark:hover:text-violet-300"
+                                            >
+                                                <ScanLine size={16} />
+                                            </Link>
                                             <Link
                                                 href={`/dashboard/events/${event.id}/sessions`}
                                                 aria-label={`View sessions for ${event.event_name}`}

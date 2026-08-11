@@ -4,10 +4,12 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
     ArrowLeft,
+    BadgeCheck,
     CalendarDays,
     CheckCircle2,
     CircleAlert,
     Clock3,
+    Coffee,
     ExternalLink,
     LoaderCircle,
     Radio,
@@ -32,6 +34,18 @@ function stateDetails(state: AttendanceState) {
                 label: "Currently attending",
                 icon: Radio,
                 classes: "bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300",
+            };
+        case "on_break":
+            return {
+                label: "On break",
+                icon: Coffee,
+                classes: "bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300",
+            };
+        case "completed":
+            return {
+                label: "Completed",
+                icon: BadgeCheck,
+                classes: "bg-sky-100 text-sky-700 dark:bg-sky-400/15 dark:text-sky-300",
             };
         case "attended":
             return {

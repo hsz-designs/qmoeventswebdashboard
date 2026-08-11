@@ -4,12 +4,14 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
     ArrowLeft,
+    BadgeCheck,
     CalendarDays,
     CheckCircle2,
     ChevronLeft,
     ChevronRight,
     CircleAlert,
     Clock3,
+    Coffee,
     LoaderCircle,
     Radio,
     Search,
@@ -23,6 +25,7 @@ import type {
     EventAttendeesResponse,
     UnregisterAttendeeResponse,
 } from "@/lib/event-attendees";
+import { attendanceStatusLabel } from "@/lib/event-scanner";
 import { authenticatedFetch } from "@/lib/supabase/authenticated-fetch";
 import { userDisplayName } from "@/lib/users";
 
@@ -46,6 +49,18 @@ function stateDetails(state: EventAttendeeDetail["state"]) {
                 label: "Currently attending",
                 icon: Radio,
                 classes: "bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300",
+            };
+        case "on_break":
+            return {
+                label: "On break",
+                icon: Coffee,
+                classes: "bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300",
+            };
+        case "completed":
+            return {
+                label: "Completed",
+                icon: BadgeCheck,
+                classes: "bg-sky-100 text-sky-700 dark:bg-sky-400/15 dark:text-sky-300",
             };
         case "attended":
             return {
@@ -284,7 +299,7 @@ export function EventAttendees({ eventId }: { eventId: string }) {
                                         <td className="px-5 py-4 text-sm text-slate-500 dark:text-slate-400">{attendee.attendance.date_time_first_in ? dateTimeFormatter.format(new Date(attendee.attendance.date_time_first_in)) : "Not checked in"}</td>
                                         <td className="px-5 py-4 text-sm text-slate-500 dark:text-slate-400">{attendee.attendance.date_time_last_out ? dateTimeFormatter.format(new Date(attendee.attendance.date_time_last_out)) : "Not checked out"}</td>
                                         <td className="px-5 py-4"><span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${details.classes}`}><StateIcon size={13} /> {details.label}</span></td>
-                                        <td className="px-5 py-4"><span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">Code {attendee.attendance.status}</span></td>
+                                        <td className="px-5 py-4"><span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">{attendanceStatusLabel(attendee.attendance.status)} · {attendee.attendance.status}</span></td>
                                         <td className="px-5 py-4 text-right">
                                             <button
                                                 type="button"

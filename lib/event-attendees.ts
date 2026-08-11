@@ -1,12 +1,12 @@
 import type { EventRecord } from "@/lib/events";
 import type { EventSessionRecord } from "@/lib/event-sessions";
-import type { AttendanceRecord, AttendanceSession, UserRecord } from "@/lib/users";
+import type { AttendanceRecord, AttendanceSession, AttendanceState, UserRecord } from "@/lib/users";
 
 export type EventAttendeeDetail = {
     attendance: AttendanceRecord;
     user: UserRecord | null;
     session: AttendanceSession | null;
-    state: "currently_attending" | "attended" | "registered";
+    state: AttendanceState;
 };
 
 export type EventAttendeesResponse = {

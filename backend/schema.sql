@@ -215,6 +215,8 @@ create table if not exists public.nu_event_attendees (
     certificate_url text,
     constraint nu_event_attendees_date_index_nonnegative
         check (date_index is null or date_index >= 0),
+    constraint nu_event_attendees_status_valid
+        check (status in (0, 1, 2, 67)),
     constraint nu_event_attendees_event_fk
         foreign key (event_id) references public.nu_events (id)
         on update cascade on delete cascade
@@ -231,6 +233,8 @@ create table if not exists public.nu_event_attendees_log (
     log_type smallint not null,
     constraint nu_event_attendees_log_date_index_nonnegative
         check (date_index is null or date_index >= 0),
+    constraint nu_event_attendees_log_type_valid
+        check (log_type in (1, 2, 67)),
     constraint nu_event_attendees_log_event_fk
         foreign key (event_id) references public.nu_events (id)
         on update cascade on delete cascade

@@ -42,6 +42,11 @@ an online meeting. `nu_event_sessions.status` uses `1` for a visible session
 and `0` for an invisible or inactive session. New rows default to an on-site,
 visible session.
 
+`nu_event_attendees.status` uses `0` for a registration that has not checked
+in, `1` for logged in, `67` for on break, and `2` for completed. Each accepted
+scanner action adds a `nu_event_attendees_log` row whose `log_type` uses the
+same `1`, `67`, or `2` activity code.
+
 ## Source-data integrity notes
 
 The location hierarchy and event-to-session links are enforced with foreign

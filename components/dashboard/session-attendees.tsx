@@ -6,9 +6,11 @@ import {
     Activity,
     ArrowLeft,
     Award,
+    BadgeCheck,
     CalendarDays,
     CheckCircle2,
     CircleAlert,
+    Coffee,
     History,
     LoaderCircle,
     Radio,
@@ -25,6 +27,7 @@ import type {
     SessionAttendeesResponse,
     UnregisterAttendeeResponse,
 } from "@/lib/event-attendees";
+import { attendanceStatusLabel } from "@/lib/event-scanner";
 import { authenticatedFetch } from "@/lib/supabase/authenticated-fetch";
 import { userDisplayName } from "@/lib/users";
 
@@ -46,6 +49,18 @@ function stateDetails(state: EventAttendeeDetail["state"]) {
                 label: "Currently attending",
                 icon: Radio,
                 classes: "bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300",
+            };
+        case "on_break":
+            return {
+                label: "On break",
+                icon: Coffee,
+                classes: "bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300",
+            };
+        case "completed":
+            return {
+                label: "Completed",
+                icon: BadgeCheck,
+                classes: "bg-sky-100 text-sky-700 dark:bg-sky-400/15 dark:text-sky-300",
             };
         case "attended":
             return {
@@ -302,7 +317,7 @@ export function SessionAttendees({ eventId, sessionId }: { eventId: string; sess
                                         <td className="px-5 py-4 text-sm text-slate-500 dark:text-slate-400">{attendee.attendance.date_time_first_in ? dateTimeFormatter.format(new Date(attendee.attendance.date_time_first_in)) : "Not checked in"}</td>
                                         <td className="px-5 py-4 text-sm text-slate-500 dark:text-slate-400">{attendee.attendance.date_time_last_out ? dateTimeFormatter.format(new Date(attendee.attendance.date_time_last_out)) : "Not checked out"}</td>
                                         <td className="px-5 py-4"><span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${details.classes}`}><StateIcon size={13} /> {details.label}</span></td>
-                                        <td className="px-5 py-4"><span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">Code {attendee.attendance.status}</span></td>
+                                        <td className="px-5 py-4"><span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">{attendanceStatusLabel(attendee.attendance.status)} · {attendee.attendance.status}</span></td>
                                         <td className="px-5 py-4 text-right">
                                             <div className="flex justify-end gap-2">
                                                 <button
@@ -371,14 +386,14 @@ export function SessionAttendees({ eventId, sessionId }: { eventId: string; sess
                                         <h3 className="font-semibold text-slate-900 dark:text-white">nu_event_attendees_log timeline</h3>
                                         <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">{logs.logs.length} records</span>
                                     </div>
-                                    <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">The current dataset only contains log type 1, so each activity code is shown exactly as stored.</p>
+                                    <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Activity types use 1 for logged in, 67 for on break, and 2 for completed.</p>
                                     <div className="mt-4 space-y-3">
                                         {logs.logs.length ? logs.logs.map((log) => (
                                             <div key={log.id} className="flex items-start gap-3 rounded-2xl border border-slate-200 p-4 dark:border-slate-700 dark:bg-slate-950/60">
                                                 <span className="rounded-xl bg-amber-100 p-2 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300"><Activity size={16} /></span>
                                                 <div className="flex-1">
                                                     <div className="flex flex-wrap items-center justify-between gap-2">
-                                                        <p className="font-semibold text-slate-900 dark:text-white">Activity code {log.log_type}</p>
+                                                        <p className="font-semibold text-slate-900 dark:text-white">{attendanceStatusLabel(log.log_type)} · {log.log_type}</p>
                                                         <span className="text-xs text-slate-400">Log #{log.id}</span>
                                                     </div>
                                                     <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{dateTimeFormatter.format(new Date(log.date_time))}</p>
