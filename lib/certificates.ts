@@ -84,6 +84,7 @@ export type CertificateIssueResponse = {
     downloadUrl: string | null;
     storageBucket: string;
     templateRecordId: string;
+    attendanceRecordsUpdated: number;
 };
 
 export const SAMPLE_CERTIFICATE_DATA: CertificateBindingData = {

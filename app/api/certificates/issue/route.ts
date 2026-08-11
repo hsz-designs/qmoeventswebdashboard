@@ -20,6 +20,7 @@ const STORAGE_BUCKET = "QMOStorage";
 const CERTIFICATE_FOLDER = "certificates";
 const TEMPLATE_FOLDER = "certificate-templates";
 const MAX_CERTIFICATE_BYTES = 20 * 1024 * 1024;
+const ATTENDEE_CERTIFICATE_URL_TTL_SECONDS = 60 * 60 * 24 * 365 * 10;
 const CERTIFICATE_SELECT = [
     "id",
     "event_id",
@@ -42,7 +43,18 @@ function positiveInteger(value: FormDataEntryValue | null) {
 async function ensureStorageBucket() {
     const admin = getSupabaseAdmin();
     const existing = await admin.storage.getBucket(STORAGE_BUCKET);
-    if (!existing.error) return null;
+    if (!existing.error) {
+        if (existing.data?.public === false) {
+            const updated = await admin.storage.updateBucket(STORAGE_BUCKET, {
+                public: true,
+                fileSizeLimit: MAX_CERTIFICATE_BYTES,
+                allowedMimeTypes: ["image/png", "image/jpeg", "application/json"],
+            });
+            return updated.error?.status === 409 ? null : updated.error;
+        }
+
+        return null;
+    }
 
     const missing = existing.error.status === 404
         || existing.error.status === 400
@@ -50,7 +62,7 @@ async function ensureStorageBucket() {
     if (!missing) return existing.error;
 
     const created = await admin.storage.createBucket(STORAGE_BUCKET, {
-        public: false,
+        public: true,
         fileSizeLimit: MAX_CERTIFICATE_BYTES,
         allowedMimeTypes: ["image/png", "image/jpeg", "application/json"],
     });
@@ -102,12 +114,37 @@ async function ensureEventTemplate(eventId: number, template: CertificateTemplat
     return inserted;
 }
 
-async function signedCertificateUrl(filePath: string | null) {
+async function storageCertificateUrl(filePath: string | null) {
     if (!filePath) return null;
-    const signed = await getSupabaseAdmin().storage
-        .from(STORAGE_BUCKET)
-        .createSignedUrl(filePath, 60 * 60);
-    return signed.error ? null : signed.data.signedUrl;
+
+    const bucket = getSupabaseAdmin().storage.from(STORAGE_BUCKET);
+    const publicUrlResult = await bucket.getPublicUrl(filePath);
+    if (publicUrlResult.error || !publicUrlResult.data?.publicUrl) {
+        const signed = await bucket.createSignedUrl(filePath, ATTENDEE_CERTIFICATE_URL_TTL_SECONDS);
+        return signed.error ? null : signed.data.signedUrl;
+    }
+
+    return publicUrlResult.data.publicUrl;
+}
+
+async function linkCertificateToAttendance({
+    certificateUrl,
+    eventId,
+    sessionId,
+    userId,
+}: {
+    certificateUrl: string;
+    eventId: number;
+    sessionId: number | null;
+    userId: string;
+}) {
+    let update = getSupabaseAdmin()
+        .from("nu_event_attendees")
+        .update({ certificate_url: certificateUrl })
+        .eq("event_id", eventId)
+        .eq("user_id", userId);
+    if (sessionId) update = update.eq("session_id", sessionId);
+    return update.select("id");
 }
 
 export async function POST(request: Request) {
@@ -222,8 +259,27 @@ export async function POST(request: Request) {
     const existingCertificate = existing.data as unknown as CertificateRecord | null;
 
     if (existingCertificate) {
-        const downloadUrl = await signedCertificateUrl(existingCertificate.file_path);
+        const downloadUrl = await storageCertificateUrl(existingCertificate.file_path);
         if (downloadUrl) {
+            const attendanceResult = await linkCertificateToAttendance({
+                certificateUrl: downloadUrl,
+                eventId,
+                sessionId,
+                userId: user.auth_user_id,
+            });
+            if (attendanceResult.error) {
+                return databaseError(
+                    attendanceResult.error,
+                    "Unable to link the certificate URL to the attendee record.",
+                );
+            }
+            if (!attendanceResult.data.length) {
+                return Response.json(
+                    { error: "The attendee registration changed before the certificate URL could be saved." },
+                    { status: 409 },
+                );
+            }
+
             await admin.from("nu_certificate_audits").insert({
                 certificate_id: existingCertificate.id,
                 action: "verify",
@@ -244,6 +300,7 @@ export async function POST(request: Request) {
                 downloadUrl,
                 storageBucket: STORAGE_BUCKET,
                 templateRecordId: templateRecord.data.id,
+                attendanceRecordsUpdated: attendanceResult.data.length,
             });
         }
 
@@ -265,6 +322,12 @@ export async function POST(request: Request) {
     });
     if (upload.error) {
         return Response.json({ error: "Unable to upload the generated certificate to Supabase Storage." }, { status: 502 });
+    }
+
+    const downloadUrl = await storageCertificateUrl(filePath);
+    if (!downloadUrl) {
+        await admin.storage.from(STORAGE_BUCKET).remove([filePath]);
+        return Response.json({ error: "Unable to create the certificate URL." }, { status: 502 });
     }
 
     const certificateResult = await admin
@@ -311,13 +374,12 @@ export async function POST(request: Request) {
         return databaseError(auditResult.error, "Unable to save the certificate audit trail.");
     }
 
-    let attendanceUpdate = admin
-        .from("nu_event_attendees")
-        .update({ certificate_url: filePath })
-        .eq("event_id", eventId)
-        .eq("user_id", user.auth_user_id);
-    if (sessionId) attendanceUpdate = attendanceUpdate.eq("session_id", sessionId);
-    const attendanceResult = await attendanceUpdate;
+    const attendanceResult = await linkCertificateToAttendance({
+        certificateUrl: downloadUrl,
+        eventId,
+        sessionId,
+        userId: user.auth_user_id,
+    });
     if (attendanceResult.error) {
         await admin.from("nu_certificate_audits").insert({
             certificate_id: issuedCertificate.id,
@@ -331,14 +393,24 @@ export async function POST(request: Request) {
                 file_path: filePath,
             },
         });
+        return databaseError(
+            attendanceResult.error,
+            "The certificate was issued, but its URL could not be linked to the attendee record. Retry to finish linking it.",
+        );
+    }
+    if (!attendanceResult.data.length) {
+        return Response.json(
+            { error: "The certificate was issued, but the attendee registration changed before its URL could be saved. Retry to finish linking it." },
+            { status: 409 },
+        );
     }
 
-    const downloadUrl = await signedCertificateUrl(filePath);
     return Response.json({
         certificate: issuedCertificate,
         alreadyIssued: false,
         downloadUrl,
         storageBucket: STORAGE_BUCKET,
         templateRecordId: templateRecord.data.id,
+        attendanceRecordsUpdated: attendanceResult.data.length,
     }, { status: 201 });
 }

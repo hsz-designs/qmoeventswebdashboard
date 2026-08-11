@@ -428,8 +428,12 @@ export function CertificatesManager() {
 
         const uploadedCount = completed.filter((result) => !result.alreadyIssued).length;
         const reusedCount = completed.length - uploadedCount;
+        const linkedAttendanceCount = completed.reduce(
+            (total, result) => total + result.attendanceRecordsUpdated,
+            0,
+        );
         if (completed.length) {
-            setNotice(`${uploadedCount} JPG certificate${uploadedCount === 1 ? "" : "s"} saved to QMOStorage/certificates${reusedCount ? `; ${reusedCount} existing JPG file${reusedCount === 1 ? "" : "s"} reused` : ""}.`);
+            setNotice(`${uploadedCount} JPG certificate${uploadedCount === 1 ? "" : "s"} saved to QMOStorage/certificates${reusedCount ? `; ${reusedCount} existing JPG file${reusedCount === 1 ? "" : "s"} reused` : ""}. ${linkedAttendanceCount} attendee session record${linkedAttendanceCount === 1 ? "" : "s"} linked to the certificate URL.`);
         }
         if (failures.length) setError(failures.slice(0, 3).join(" • "));
         setIsSavingJpg(false);

@@ -255,7 +255,11 @@ export function CertificateGenerationModal({
         setResults(completed);
         const createdCount = completed.filter((result) => !result.alreadyIssued).length;
         const existingCount = completed.length - createdCount;
-        const message = `${createdCount} certificate(s) uploaded${existingCount ? `; ${existingCount} existing file(s) reused` : ""}${failures.length ? `; ${failures.length} failed` : ""}.`;
+        const linkedAttendanceCount = completed.reduce(
+            (total, result) => total + result.attendanceRecordsUpdated,
+            0,
+        );
+        const message = `${createdCount} certificate(s) uploaded${existingCount ? `; ${existingCount} existing file(s) reused` : ""}${failures.length ? `; ${failures.length} failed` : ""}. ${linkedAttendanceCount} attendee session record(s) linked to the certificate URL.`;
         if (completed.length) {
             setNotice(message);
             onCompleted?.(message);
