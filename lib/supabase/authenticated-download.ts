@@ -13,7 +13,7 @@ function responseFilename(response: Response) {
     return basicMatch?.[1] || "download";
 }
 
-export async function downloadAuthenticatedFile(path: string) {
+export async function downloadAuthenticatedFile(path: string, init: RequestInit = {}) {
     const { data, error: sessionError } = await supabase.auth.getSession();
     const accessToken = data.session?.access_token;
 
@@ -21,11 +21,9 @@ export async function downloadAuthenticatedFile(path: string) {
         throw new Error("Sign in with your Supabase account to export attendees.");
     }
 
-    const response = await fetch(path, {
-        headers: {
-            Authorization: `Bearer ${accessToken}`,
-        },
-    });
+    const headers = new Headers(init.headers);
+    headers.set("Authorization", `Bearer ${accessToken}`);
+    const response = await fetch(path, { ...init, headers });
 
     if (!response.ok) {
         const payload = (await response.json().catch(() => ({}))) as ApiError;

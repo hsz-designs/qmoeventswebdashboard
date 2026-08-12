@@ -10,7 +10,6 @@ import {
     CircleAlert,
     Clock3,
     FileSpreadsheet,
-    FileText,
     LoaderCircle,
     MapPin,
     Pencil,
@@ -28,10 +27,7 @@ import type {
     SessionLocations,
 } from "@/lib/event-sessions";
 import type { EventRecord } from "@/lib/events";
-import { downloadAuthenticatedFile } from "@/lib/supabase/authenticated-download";
 import { authenticatedFetch } from "@/lib/supabase/authenticated-fetch";
-
-type ExportFormat = "csv" | "excel";
 
 type SessionFormValues = {
     session_topic: string;
@@ -122,7 +118,6 @@ export function SessionsManager({ eventId }: { eventId: string }) {
     const [form, setForm] = useState<SessionFormValues>(emptyForm);
     const [isSaving, setIsSaving] = useState(false);
     const [deletingId, setDeletingId] = useState<number | null>(null);
-    const [exporting, setExporting] = useState<{ sessionId: number; format: ExportFormat } | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [modalError, setModalError] = useState<string | null>(null);
     const [notice, setNotice] = useState<string | null>(null);
@@ -360,29 +355,6 @@ export function SessionsManager({ eventId }: { eventId: string }) {
         }
     }
 
-    async function exportAttendees(session: EventSessionRecord, format: ExportFormat) {
-        setExporting({ sessionId: session.id, format });
-        setError(null);
-        setNotice(null);
-
-        try {
-            await downloadAuthenticatedFile(
-                `/api/events/${eventId}/sessions/${session.id}/attendees/export?format=${format}`,
-            );
-            setNotice(
-                `${format === "csv" ? "CSV" : "Excel"} attendee export downloaded for “${session.session_topic}”.`,
-            );
-        } catch (exportError) {
-            setError(
-                exportError instanceof Error
-                    ? exportError.message
-                    : "Unable to export session attendees.",
-            );
-        } finally {
-            setExporting(null);
-        }
-    }
-
     function locationLabel(session: EventSessionRecord) {
         const building = locations.buildings.find((item) => item.id === session.session_building_id);
         const floor = locations.floors.find((item) => item.id === session.session_floor_id);
@@ -517,24 +489,12 @@ export function SessionsManager({ eventId }: { eventId: string }) {
 
                                 <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-4 dark:border-slate-800">
                                     <span className="mr-1 text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">Export attendees</span>
-                                    <button
-                                        type="button"
-                                        onClick={() => exportAttendees(session, "csv")}
-                                        disabled={exporting !== null}
-                                        className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:border-sky-500 dark:hover:bg-sky-400/10 dark:hover:text-sky-300"
+                                    <Link
+                                        href={`/dashboard/events/${eventId}/sessions/${session.id}/export`}
+                                        className="inline-flex items-center gap-2 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-medium text-sky-700 transition hover:border-sky-400 hover:bg-sky-100 dark:border-sky-400/25 dark:bg-sky-400/10 dark:text-sky-300 dark:hover:bg-sky-400/20"
                                     >
-                                        {exporting?.sessionId === session.id && exporting.format === "csv" ? <LoaderCircle size={15} className="animate-spin" /> : <FileText size={15} />}
-                                        CSV
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => exportAttendees(session, "excel")}
-                                        disabled={exporting !== null}
-                                        className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:border-emerald-500 dark:hover:bg-emerald-400/10 dark:hover:text-emerald-300"
-                                    >
-                                        {exporting?.sessionId === session.id && exporting.format === "excel" ? <LoaderCircle size={15} className="animate-spin" /> : <FileSpreadsheet size={15} />}
-                                        Excel
-                                    </button>
+                                        <FileSpreadsheet size={15} /> Configure export
+                                    </Link>
                                     <button
                                         type="button"
                                         onClick={() => {
